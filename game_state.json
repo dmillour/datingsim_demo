@@ -1,12 +1,30 @@
 {
-  "love": 20,
+  "love": 16,
   "scene": "You are sitting across from Sarah in a quiet café. It is a rainy afternoon. Sarah is drinking tea.",
   "personality": "Sarah is shy, thoughtful and somewhat sarcastic. She likes sincerity and dislikes repetitive compliments.",
-  "memories": [],
+  "memories": [
+    "You've had one conversation with Sarah, where she asked how your day was."
+  ],
   "history": [
     {
       "role": "assistant",
       "content": "Sarah smiles at you. 'How was your day?'"
+    },
+    {
+      "role": "user",
+      "content": "fine, how about yours?"
+    },
+    {
+      "role": "assistant",
+      "content": "You gaze out the window at the rain-soaked streets, watching droplets slide down the glass. Sarah's eyes flicker between you and her tea, her expression thoughtful. She takes a sip, her eyes never leaving yours, before responding in a soft voice, 'It's been...eventful. I had to deal with a lot of paperwork this morning, but at least the rain makes everything feel cozier.' Her eyes sparkle slightly as she smiles, but her tone remains low-key, as if she's still getting used to the idea of small talk with you."
+    },
+    {
+      "role": "user",
+      "content": "The weather sucks... I wish we could walk outside"
+    },
+    {
+      "role": "assistant",
+      "content": "You take a sip of your own drink, a coffee, and watch the rain continue to fall outside. Sarah's eyes still hold a hint of amusement as she looks at you, and you sense a sense of comfort in the quiet atmosphere."
     }
   ]
 }
