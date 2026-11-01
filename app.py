@@ -14,6 +14,8 @@ OLLAMA_HOST="http://localhost:9999"
 MODEL = "llama3.1:8b"
 SAVE_FILE = Path("game_state.json")
 
+client = ollama.Client(host=OLLAMA_HOST)
+
 st.set_page_config(page_title="Dating Sim", page_icon="💕")
 st.title("💕 Dating Sim Prototype")
 
@@ -94,8 +96,7 @@ game = st.session_state.game
 # --------------------------------------------------
 
 def ask_ai(system_prompt, context, schema):
-    response = ollama.chat(
-        host=OLLAMA_HOST,
+    response = client.chat(
         model=MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
@@ -200,5 +201,103 @@ def execute(actions):
     )
 
 
+
 # --------------------------------------------------
 # Interface
+# --------------------------------------------------
+
+st.subheader("Sarah")
+st.caption(game["scene"])
+
+# Display conversation
+for message in game["history"]:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
+
+st.divider()
+
+# Player input
+player_input = st.chat_input("What would you like to do?")
+
+if player_input:
+    try:
+        with st.spinner("Interpreting your actions..."):
+            result = interpret(player_input)
+
+        st.session_state.pending = {
+            "input": player_input,
+            "valid": result.valid,
+            "actions": [a.model_dump() for a in result.actions],
+            "explanation": result.explanation,
+        }
+        st.rerun()
+
+    except Exception as error:
+        st.error(f"Interpreter error: {error}")
+
+
+# Confirmation
+pending = st.session_state.pending
+
+if pending:
+    st.subheader("Proposed actions")
+
+    if pending["valid"]:
+        for action in pending["actions"]:
+            st.write(f"**{action['type']}** — {action['target']}")
+            if action["content"]:
+                st.caption(action["content"])
+
+        if st.button("Confirm actions", type="primary"):
+            try:
+                with st.spinner("Sarah is responding..."):
+                    result = execute(pending["actions"])
+
+                game["love"] = max(
+                    0,
+                    min(100, game["love"] + result.love_delta),
+                )
+
+                for memory in result.memories:
+                    if memory not in game["memories"]:
+                        game["memories"].append(memory)
+
+                game["memories"] = game["memories"][-30:]
+
+                game["history"].append({
+                    "role": "user",
+                    "content": pending["input"],
+                })
+                game["history"].append({
+                    "role": "assistant",
+                    "content": result.narration,
+                })
+
+                game["history"] = game["history"][-40:]
+
+                save_game(game)
+                st.session_state.pending = None
+                st.rerun()
+
+            except Exception as error:
+                st.error(f"Narrator error: {error}")
+
+    else:
+        st.warning(pending["explanation"] or "Impossible action.")
+
+    if st.button("Cancel"):
+        st.session_state.pending = None
+        st.rerun()
+
+
+# Sidebar
+with st.sidebar:
+    st.header("Game")
+    st.caption("Relationship score is hidden.")
+
+    if st.button("Restart game"):
+        st.session_state.game = new_game()
+        save_game(st.session_state.game)
+        st.session_state.pending = None
+        st.rerun()
+
